@@ -5,24 +5,20 @@ const pool = new Pool({
   database: 'bootcampx'
 });
 
-pool.query(`
+const values = [process.argv[2]];
+const text = `
 SELECT DISTINCT teachers.name AS teacher, cohorts.name AS cohort
 FROM teachers
 JOIN assistance_requests ON teachers.id = teacher_id
 JOIN students ON students.id = student_id
 JOIN cohorts ON cohorts.id = cohort_id
-WHERE cohorts.name = '${process.argv[2]}'
+WHERE cohorts.name = $1
 ORDER BY teacher;
-`)
+`;
+
+pool.query(text, values)
 .then(res => {
   res.rows.forEach(row => {
     console.log(`${row.cohort} : ${row.teacher}`);
   })
-});
-
-
-// SELECT students.id as student_id, students.name as name, cohorts.name as cohort
-// FROM students
-// JOIN cohorts ON cohorts.id = cohort_id
-// WHERE cohorts.name LIKE '%${process.argv[2]}%'
-// LIMIT ${process.argv[3] || 5};
+}).catch(err => console.error('query error', err.stack));
